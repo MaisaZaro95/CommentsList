@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Comments
+    </title>
+    <!-- inject:css -->
+    <link rel="stylesheet" href="/bower_components/angular-material/angular-material.min.css">
+    <link rel="stylesheet" href="/bower_components/angular-local-storage/demo/demo-style.css">
+    <link rel="stylesheet" href="/public/css/app.css">
+    <link rel="stylesheet" href="/public/css/general.css">
+    <!-- endinject -->
+	<!-- inject material icons --->
+	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  </head>
+  <body ng-app="Comments" ng-cloak ng-controller="commentsController" md-theme="indigo" md-theme-watch  >
+  <!---		toolbar to show the title		--->
+    <md-toolbar>
+      <div class="md-display-3 md-toolbar-tools ">
+        <span class="md-display-1">{{appTitle}}
+        </span>
+        <span flex="">
+        </span>
+        <!-------- Button to Add New Comment ------->
+        <md-button id="addBt" class="md-fab" aria-label="add new comment" ng-click="commentDialog($event,-1,'new')">
+          <md-icon class="material-icons md-24">add
+          </md-icon>
+        </md-button>
+      </div>
+    </md-toolbar>
+	
+	<!--- content of the page	--->
+    <div layout="row">
+      <div flex="10">		<!-- used to margin the content -->
+      </div>
+      <md-content flex="80" class="md-background" >
+        <!-----------	Serach Input 	-------------> 
+        <h1 class="md-headline md-background">{{appSubTitle}}
+        </h1>
+        <md-card>
+          <md-card-content>
+            <md-input-container class="md-block">
+              <label>search comments
+              </label>
+              <input  ng-model="search.Text">
+            </md-input-container>
+          </md-card-content>
+        </md-card>
+        <!-------		Switch		----------->  
+        <div layout="row">
+          <h3 flex="8" class="md-caption">
+            </br>search by id
+          </h3>
+        <md-switch flex ng-model="search.By" ng-true-value="'email'" ng-false-value="'id'" aria-label="Search By ID or Email" class="md-warn">
+          <h3 class="md-caption">search by email
+          </h3>
+        </md-switch>
+        </div>
+      <!-------		list of Comments		-------->
+      <md-list id="card-container">
+        <md-list-item layout="column" class="md-2-line" ng-repeat="comment in AllComments | searchFor:search track by $index">
+          <div flex="10" class="md-subhead"> &nbsp;comment : {{comment.id }}
+          </div>
+          <md-card layout-align= "flex-start" layout="row" >
+		  
+		  
+		  <!--	the details of the comment -->
+            <md-card-content flex="1000">
+              <div id="commentBody" class="md-subhead" md-colors="{'border': 'default-grey-200'}">{{ comment.body }}
+              </div>
+              <md-whiteframe class="md-whiteframe-8dp md-caption" md-colors="{'background': 'default-blue-200'}">
+                <span>{{ comment.email }}
+                </span>
+              </md-whiteframe>
+            </md-card-content >
+			<!--					-->
+			 
+            <md-card-actions flex="10" >
+			
+              <md-card-icon-actions layout-align="end end">
+			  
+			  <!-- edit icon for each comment	-->
+                <md-button class="md-icon-button" ng-click="commentDialog($event,comment.id,'edit')" style="cursor:pointer;" >
+                  <md-icon class="material-icons md-18">
+                    edit
+                  </md-icon>
+                </md-button>
+				
+				<!-- cancel icon for each comment	-->
+                <md-button class="md-icon-button" ng-click="removeComment(comment.id )" style="cursor:pointer;" >
+                  <md-icon class="material-icons md-18">close
+                  </md-icon>							
+                </md-button>
+				
+				
+              </md-card-icon-actions>
+            </md-card-actions>
+          </md-card>
+        </md-list-item>
+      </md-list>
+      </md-content>
+    <div flex>
+    </div>
+    </div> 
+	
+	
+	
+  <!------- dialog "pop up"	-------->	 
+  <script type="text/ng-template" id="AddCommentDialog.html">
+  <form name="myForm" md-theme="lime" md-theme-watch style="width:50%">
+    <md-dialog aria-label="ِAdd A Comment">
+	
+	<!--	title of pop up (edit comment | add comment )	-->
+	<md-toolbar md-colors="{ backgroundColor:'grey-A100', color:'grey-A400' }">
+    <div class="md-display-3 md-toolbar-tools">
+      <span  class="md-headline">{{dialogTitle}}</span>
+      <span flex=""></span>
+	  <md-button class="md-icon-button" aria-label="cancel" ng-click="cancel()">
+        <md-icon class="material-icons md-18">close</md-icon>
+    </md-button>
+    </div>
+    </md-toolbar>
+	<!---						-->
+	
+    <div layout-padding layout="column">
+	<!--	input container for name of comment -->
+        <md-input-container flex class="md-block">
+		<label>comment name</label>
+        <input ng-model="commentName" md-no-asterisk name="name" required>
+		<!--	the name is required		-->
+		<div ng-messages="myForm.name.$error">
+				<div ng-message="required">This is required.</div>        
+		</div>
+		</md-input-container>
+        
+	<!--	input container for body of comment -->	
+		<md-input-container flex class="md-block">
+		<label>comment body</label>
+        <input type="textarea" ng-model="commentBody" md-no-asterisk name="body" required>
+		    <div ng-messages="myForm.body.$error">
+				<div ng-message="required">This is required.</div>        
+			</div>
+		</md-input-container>
+		
+	<!--	input container for email of comment -->	
+		<md-input-container flex class="md-block">
+		<label>comment email</label>
+        <input type="email" ng-model="commentEmail" md-no-asterisk name="email" ng-pattern="/^.+@.+\..+$/"  required>
+		<!--		validation for email		-->
+		<div ng-messages="myForm.email.$error">
+			<div ng-message-exp="['required','pattern']">InValid Email.</div>
+		</div>
+		</md-input-container>
+		
+		
+		<div layout="row">
+		<div flex="70"></div>
+       <md-button flex ng-if="dialogNewState" ng-disabled="myForm.email.$invalid || myForm.name.$invalid || myForm.body.$invalid" ng-click="save()">{{dialogBt}}</md-button>
+       <md-button flex ng-if="dialogEditState" ng-disabled="myForm.email.$invalid || myForm.name.$invalid || myForm.body.$invalid" ng-click="edit($index)"  >{{dialogBt}}</md-button>
+    </div>
+    </div>
+    </md-dialog>
+    </form>
+	
+	
+  </script>
+  <!-- inject:js -->
+  <script src="/bower_components/angular/angular.min.js"></script>
+  <script src="/bower_components/angular-animate/angular-animate.min.js"></script>
+  <script src="/bower_components/angular-aria/angular-aria.min.js"></script>
+  <script src="/bower_components/angular-local-storage/index.js"></script>
+  <script src="/bower_components/angular-material/angular-material.min.js"></script>
+  <script src="/bower_components/angular-messages/angular-messages.min.js"></script>
+  <script src="/bower_components/angular-ui-router/angular-ui-router.min.js"></script>
+  <script src="/bower_components/angular-local-storage/dist/angular-local-storage.js"></script>
+  <script src="/bower_components/angular-local-storage/dist/angular-local-storage.min.js"></script>
+  <script src="/bower_components/angular-local-storage/demo/demo-app.js"></script>
+  <script src="/public/js/config/app.js"></script>
+  <script src="/public/js/controllers/comments-controller.js"></script>
+  <!-- endinject -->
+  </body>
+</html>
